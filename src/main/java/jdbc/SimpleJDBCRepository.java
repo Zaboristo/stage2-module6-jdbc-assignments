@@ -29,25 +29,22 @@ public class SimpleJDBCRepository {
     private static final String findAllUserSQL = "SELECT * FROM public.myusers;";
 
     public Long createUser(User user) {
-        Long returnedId = null;
+        Long queryResp = 0L;
         if (user.getFirstName() == null || user.getLastName() == null) {
             throw new IllegalArgumentException("First name and last name cannot be null.");
         }
         try {
             this.connection = CustomDataSource.getInstance().getConnection();
             ps = connection.prepareStatement(createUserSQL, Statement.RETURN_GENERATED_KEYS);
+
             ps.setInt(3, user.getAge());
             ps.setString(1, user.getFirstName());
             ps.setString(2, user.getLastName());
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    returnedId = rs.getLong("id"); // Get the generated id
-                }
-            }
+            queryResp = (long) ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return returnedId;
+        return queryResp;
     }
 
     public User findUserById(Long userId) {
