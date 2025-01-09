@@ -25,11 +25,11 @@ public class SimpleJDBCRepository {
             "firstname = ?, lastname = ?, age = ? WHERE id = ?;";
     private static final String deleteUser = "DELETE FROM public.myusers WHERE id = ?;";
     private static final String findUserByIdSQL = "SELECT * FROM public.myusers WHERE id = ?;";
-    private static final String findUserByNameSQL = "SELECT * FROM public.myusers WHERE name = ? LIMIT 1;";
+    private static final String findUserByNameSQL = "SELECT * FROM public.myusers WHERE firstname = ? LIMIT 1;";
     private static final String findAllUserSQL = "SELECT * FROM public.myusers;";
 
     public Long createUser(User user) {
-        Long queryResp = 0L;
+        Long returnedId = null;
         if (user.getFirstName() == null || user.getLastName() == null) {
             throw new IllegalArgumentException("First name and last name cannot be null.");
         }
@@ -39,11 +39,15 @@ public class SimpleJDBCRepository {
             ps.setInt(3, user.getAge());
             ps.setString(1, user.getFirstName());
             ps.setString(2, user.getLastName());
-            queryResp = (long) ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    returnedId = rs.getLong(1); // Get the generated id
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return queryResp;
+        return returnedId;
     }
 
     public User findUserById(Long userId) {
