@@ -17,11 +17,12 @@ import jdbc.CustomConnector;
 @Getter
 @Setter
 public class CustomDataSource implements DataSource {
-    private static volatile CustomDataSource instance;
+    private static volatile CustomDataSource instance = null;
     private final String driver;
     private final String url;
     private final String name;
     private final String password;
+    private final Instance instanceProps = new Instance();
 
     private CustomDataSource(String driver, String url, String password, String name) {
         this.driver = driver;
@@ -33,11 +34,6 @@ public class CustomDataSource implements DataSource {
     public static CustomDataSource getInstance() {
         if (instance == null) {
             Instance props = new Instance();
-            try {
-                Class.forName(props.driver);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
             instance = new CustomDataSource(props.driver, props.url, props.password, props.name);
         }
         return instance;
@@ -45,7 +41,7 @@ public class CustomDataSource implements DataSource {
 
     @Override
     public Connection getConnection() throws SQLException {
-        return CustomConnector.getConnection(url);
+        return CustomConnector.getConnection(url, name, password);
     }
 
     @Override
@@ -102,10 +98,15 @@ public class CustomDataSource implements DataSource {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            this.driver = props.getProperty("driver");
-            this.name = props.getProperty("name");
-            this.url = props.getProperty("url");
-            this.password = props.getProperty("password");
+            this.driver = props.getProperty("postgres.driver");
+            this.name = props.getProperty("postgres.name");
+            this.url = props.getProperty("postgres.url");
+            this.password = props.getProperty("postgres.password");
+            try {
+                Class.forName(this.driver);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

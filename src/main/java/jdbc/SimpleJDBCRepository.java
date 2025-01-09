@@ -21,9 +21,7 @@ public class SimpleJDBCRepository {
     private Statement st = null;
 
     private static final String createUserSQL = "INSERT INTO public.myusers (\n" +
-            "id, firstname, lastname, age) VALUES (\n" +
-            "'?'::bigint, '?'::character varying, '?'::character varying, '?'::integer)\n" +
-            " returning id;";
+            "id, firstname, lastname, age) VALUES (?, ?, ?, ?) returning id;";
     private static final String updateUserSQL = "UPDATE public.myusers SET\n" +
             "id = '?'::bigint, firstname = '?'::character varying, lastname = '?'::character varying, age = '?'::integer WHERE\n" +
             "id = '?';";
@@ -38,12 +36,12 @@ public class SimpleJDBCRepository {
         Long queryResp = 0L;
         try {
             this.connection = CustomDataSource.getInstance().getConnection();
-            ps = connection.prepareStatement(createUserSQL);
+            ps = connection.prepareStatement(createUserSQL, Statement.RETURN_GENERATED_KEYS);
             ps.setLong(1, user.getId());
             ps.setInt(4, user.getAge());
             ps.setString(2, user.getFirstName());
             ps.setString(3, user.getLastName());
-            queryResp = (long) st.executeUpdate(createUserSQL);
+            queryResp = (long) ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
