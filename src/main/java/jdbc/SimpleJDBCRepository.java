@@ -30,6 +30,9 @@ public class SimpleJDBCRepository {
 
     public Long createUser(User user) {
         Long queryResp = 0L;
+        if (user.getFirstName() == null || user.getLastName() == null) {
+            throw new IllegalArgumentException("First name and last name cannot be null.");
+        }
         try {
             this.connection = CustomDataSource.getInstance().getConnection();
             ps = connection.prepareStatement(createUserSQL, Statement.RETURN_GENERATED_KEYS);
