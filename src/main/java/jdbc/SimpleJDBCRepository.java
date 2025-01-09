@@ -41,7 +41,7 @@ public class SimpleJDBCRepository {
             ps.setString(2, user.getLastName());
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    returnedId = rs.getLong(1); // Get the generated id
+                    returnedId = rs.getLong("id"); // Get the generated id
                 }
             }
         } catch (SQLException e) {
