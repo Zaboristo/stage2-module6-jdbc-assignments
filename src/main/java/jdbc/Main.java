@@ -5,5 +5,6 @@ public class Main {
         SimpleJDBCRepository db = new SimpleJDBCRepository();
         db.deleteUser(1L);
         db.createUser(new User(1L, "abc", "leo", 3));
+        System.out.println(db.findUserById(1L));
     }
 }
