@@ -20,6 +20,14 @@ public class SimpleJDBCRepository {
     private PreparedStatement ps = null;
     private Statement st = null;
 
+    {
+        try {
+            this.connection = CustomDataSource.getInstance().getConnection();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static final String createUserSQL = "INSERT INTO public.myusers (\n" +
             "id, firstname, lastname, age) VALUES (\n" +
             "'?'::bigint, '?'::character varying, '?'::character varying, '?'::integer)\n" +
