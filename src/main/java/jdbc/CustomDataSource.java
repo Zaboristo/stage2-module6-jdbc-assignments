@@ -5,11 +5,13 @@ import javax.sql.DataSource;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
+import java.util.Properties;
 import jdbc.CustomConnector;
 
 @Getter
@@ -20,19 +22,17 @@ public class CustomDataSource implements DataSource {
     private final String url;
     private final String name;
     private final String password;
-    private final CustomConnector connector;
 
     private CustomDataSource(String driver, String url, String password, String name) {
         this.driver = driver;
         this.url = url;
         this.name = name;
         this.password = password;
-        this.connector = new CustomConnector();
     }
 
     public static CustomDataSource getInstance() {
         if (instance == null) {
-            Properties props = new Properties();
+            Instance props = new Instance();
             try {
                 Class.forName(props.driver);
             } catch (ClassNotFoundException e) {
@@ -89,17 +89,23 @@ public class CustomDataSource implements DataSource {
         return false;
     }
 
-    private static class Properties {
+    private static class Instance {
         private final String driver;
         private final String url;
         private final String name;
         private final String password;
 
-        private Properties() {
-            this.driver = System.getProperty("driver");
-            this.name = System.getProperty("name");
-            this.url = System.getProperty("url");
-            this.password = System.getProperty("password");
+        private Instance() {
+            Properties props = new Properties();
+            try {
+                props.load(CustomDataSource.class.getClassLoader().getResourceAsStream("app.properties"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.driver = props.getProperty("driver");
+            this.name = props.getProperty("name");
+            this.url = props.getProperty("url");
+            this.password = props.getProperty("password");
         }
     }
 }
