@@ -20,14 +20,6 @@ public class SimpleJDBCRepository {
     private PreparedStatement ps = null;
     private Statement st = null;
 
-    {
-        try {
-            this.connection = CustomDataSource.getInstance().getConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private static final String createUserSQL = "INSERT INTO public.myusers (\n" +
             "id, firstname, lastname, age) VALUES (\n" +
             "'?'::bigint, '?'::character varying, '?'::character varying, '?'::integer)\n" +
@@ -44,11 +36,13 @@ public class SimpleJDBCRepository {
 
     public Long createUser(User user) {
         Long queryResp = 0L;
-        try (PreparedStatement st = connection.prepareStatement(createUserSQL)) {
-            st.setLong(1, user.getId());
-            st.setInt(4, user.getAge());
-            st.setString(2, user.getFirstName());
-            st.setString(3, user.getLastName());
+        try {
+            this.connection = CustomDataSource.getInstance().getConnection();
+            ps = connection.prepareStatement(createUserSQL);
+            ps.setLong(1, user.getId());
+            ps.setInt(4, user.getAge());
+            ps.setString(2, user.getFirstName());
+            ps.setString(3, user.getLastName());
             queryResp = (long) st.executeUpdate(createUserSQL);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -58,9 +52,11 @@ public class SimpleJDBCRepository {
 
     public User findUserById(Long userId) {
         User user = new User();
-        try (PreparedStatement st = connection.prepareStatement(findUserByIdSQL)) {
-            st.setLong(1, userId);
-            ResultSet result = st.executeQuery(createUserSQL);
+        try {
+            connection = CustomDataSource.getInstance().getConnection();
+            ps = connection.prepareStatement(findUserByIdSQL);
+            ps.setLong(1, userId);
+            ResultSet result = ps.executeQuery(createUserSQL);
             user.setId(userId);
             user.setFirstName(result.getString("firstname"));
             user.setLastName(result.getString("lastname"));
@@ -73,9 +69,11 @@ public class SimpleJDBCRepository {
 
     public User findUserByName(String userName) {
         User user = new User();
-        try (PreparedStatement st = connection.prepareStatement(findUserByNameSQL)) {
-            st.setString(1, userName);
-            ResultSet result = st.executeQuery(createUserSQL);
+        try {
+            connection = CustomDataSource.getInstance().getConnection();
+            ps = connection.prepareStatement(findUserByNameSQL);
+            ps.setString(1, userName);
+            ResultSet result = ps.executeQuery(createUserSQL);
             user.setId(result.getLong("id"));
             user.setFirstName(result.getString("firstname"));
             user.setLastName(result.getString("lastname"));
@@ -88,7 +86,9 @@ public class SimpleJDBCRepository {
 
     public List<User> findAllUser() {
         List<User> queryResult = new ArrayList<>();
-        try (Statement st = connection.createStatement()) {
+        try  {
+            connection = CustomDataSource.getInstance().getConnection();
+            st = connection.createStatement();
             ResultSet result = st.executeQuery(findAllUserSQL);
             while (result.next()) {
                 User user = new User();
@@ -106,13 +106,15 @@ public class SimpleJDBCRepository {
     }
 
     public User updateUser(User user) {
-        try (PreparedStatement st = connection.prepareStatement(updateUserSQL)) {
-            st.setLong(1, user.getId());
-            st.setLong(5, user.getId());
-            st.setInt(4, user.getAge());
-            st.setString(2, user.getFirstName());
-            st.setString(3, user.getLastName());
-            st.executeUpdate();
+        try {
+            connection = CustomDataSource.getInstance().getConnection();
+            ps = connection.prepareStatement(updateUserSQL);
+            ps.setLong(1, user.getId());
+            ps.setLong(5, user.getId());
+            ps.setInt(4, user.getAge());
+            ps.setString(2, user.getFirstName());
+            ps.setString(3, user.getLastName());
+            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -120,9 +122,11 @@ public class SimpleJDBCRepository {
     }
 
     public void deleteUser(Long userId) {
-        try (PreparedStatement st = connection.prepareStatement(deleteUser)) {
-            st.setLong(1, userId);
-            st.executeUpdate();
+        try {
+            connection = CustomDataSource.getInstance().getConnection();
+            ps = connection.prepareStatement(deleteUser);
+            ps.setLong(1, userId);
+            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
