@@ -22,11 +22,11 @@ public class SimpleJDBCRepository {
 
     private static final String createUserSQL = "INSERT INTO public.myusers (\n" +
             "id, firstname, lastname, age) VALUES (\n" +
-            "'?'::integer, '?'::character varying, '?'::character varying, '?'::integer)\n" +
+            "'?'::bigint, '?'::character varying, '?'::character varying, '?'::integer)\n" +
             " returning id;";
     private static final String updateUserSQL = "UPDATE public.myusers SET\n" +
-            "firstname = '?'::character varying WHERE\n" +
-            "id = 1;";
+            "id = '?'::bigint, firstname = '?'::character varying, lastname = '?'::character varying, age = '?'::integer WHERE\n" +
+            "id = '?';";
     private static final String deleteUser = "DELETE FROM public.myusers\n" +
             "    WHERE id IN\n" +
             "        (?);";
@@ -34,16 +34,48 @@ public class SimpleJDBCRepository {
     private static final String findUserByNameSQL = "SELECT * FROM public.myusers WHERE name = ? LIMIT 1;";
     private static final String findAllUserSQL = "SELECT * FROM public.myusers;";
 
-    public Long createUser() {
-        return null;
+    public Long createUser(User user) {
+        Long queryResp = 0L;
+        try (PreparedStatement st = connection.prepareStatement(createUserSQL)) {
+            st.setLong(1, user.getId());
+            st.setInt(4, user.getAge());
+            st.setString(2, user.getFirstName());
+            st.setString(3, user.getLastName());
+            queryResp = (long) st.executeUpdate(createUserSQL);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return queryResp;
     }
 
     public User findUserById(Long userId) {
-        return null;
+        User user = new User();
+        try (PreparedStatement st = connection.prepareStatement(findUserByIdSQL)) {
+            st.setLong(1, userId);
+            ResultSet result = st.executeQuery(createUserSQL);
+            user.setId(userId);
+            user.setFirstName(result.getString("firstname"));
+            user.setLastName(result.getString("lastname"));
+            user.setAge(result.getInt("age"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
     }
 
     public User findUserByName(String userName) {
-        return null;
+        User user = new User();
+        try (PreparedStatement st = connection.prepareStatement(findUserByNameSQL)) {
+            st.setString(1, userName);
+            ResultSet result = st.executeQuery(createUserSQL);
+            user.setId(result.getLong("id"));
+            user.setFirstName(result.getString("firstname"));
+            user.setLastName(result.getString("lastname"));
+            user.setAge(result.getInt("age"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
     }
 
     public List<User> findAllUser() {
@@ -65,10 +97,26 @@ public class SimpleJDBCRepository {
         return queryResult;
     }
 
-    public User updateUser() {
-        return null;
+    public User updateUser(User user) {
+        try (PreparedStatement st = connection.prepareStatement(updateUserSQL)) {
+            st.setLong(1, user.getId());
+            st.setLong(5, user.getId());
+            st.setInt(4, user.getAge());
+            st.setString(2, user.getFirstName());
+            st.setString(3, user.getLastName());
+            st.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
     }
 
     private void deleteUser(Long userId) {
+        try (PreparedStatement st = connection.prepareStatement(deleteUser)) {
+            st.setLong(1, userId);
+            st.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
