@@ -49,6 +49,12 @@
             <version>1.18.30</version>
         </dependency>
         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.220</version> <!-- Ensure this is the version you wish to use -->
+            <scope>test</scope> <!-- Use 'test' if it's only for testing purposes -->
+        </dependency>
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.4</version>
